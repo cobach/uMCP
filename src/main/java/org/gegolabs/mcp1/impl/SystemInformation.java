@@ -1,7 +1,8 @@
 package org.gegolabs.mcp1.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.gegolabs.mcp1.protocol.CapabilityException;
-import org.gegolabs.mcp1.protocol.Info;
+import org.gegolabs.mcp1.protocol.Description;
 import org.gegolabs.mcp1.protocol.SyncCapability;
 
 import java.lang.management.ManagementFactory;
@@ -11,12 +12,40 @@ import java.lang.management.OperatingSystemMXBean;
  * A capability that provides detailed information about the system environment.
  * This includes OS details, Java version, memory usage, and other system properties.
  */
-@Info("Provides detailed information about the system environment")
+@Slf4j
+@Description("Provides detailed information about the system environment")
 public class SystemInformation implements SyncCapability<Void,String>{
 
     /**
      * Default constructor for SystemInformation.
      */
+    public SystemInformation() {
+        // No initialization needed in constructor
+    }
+
+    /**
+     * Initializes the capability.
+     * This implementation logs the initialization but doesn't need to do any setup.
+     *
+     * @throws CapabilityException if initialization fails
+     */
+    @Override
+    public void initialize() throws CapabilityException {
+        log.info("Initializing SystemInformation capability");
+        // No specific initialization needed for this capability
+    }
+
+    /**
+     * Shuts down the capability.
+     * This implementation logs the shutdown but doesn't need to do any cleanup.
+     *
+     * @throws CapabilityException if shutdown fails
+     */
+    @Override
+    public void shutdown() throws CapabilityException {
+        log.info("Shutting down SystemInformation capability");
+        // No specific cleanup needed for this capability
+    }
 
     /**
      * Executes the system information capability.
@@ -26,8 +55,8 @@ public class SystemInformation implements SyncCapability<Void,String>{
      * @throws CapabilityException if there is an error retrieving system information
      */
     @Override
-    @Info("A formatted string containing system information including OS details, Java version, memory usage, etc.")
-    public String execute(@Info("No input required (Void)") Void input) throws CapabilityException {
+    @Description("A formatted string containing system information including OS details, Java version, memory usage, etc.")
+    public String execute(@Description("No input required (Void)") Void input) throws CapabilityException {
         return getSystemReport();
     }
 
@@ -56,8 +85,6 @@ public class SystemInformation implements SyncCapability<Void,String>{
         return report.toString();
     }
 
-
-
     /**
      * Formats a property name and value as a string.
      *
@@ -68,6 +95,4 @@ public class SystemInformation implements SyncCapability<Void,String>{
     private static String formatProperty(String name, Object value) {
         return String.format("%-20s: %s%n", name, value);
     }
-
-
 }

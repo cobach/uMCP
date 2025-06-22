@@ -51,7 +51,7 @@ public class Main {
                 .tool(new SystemInformation())
                 .build();
         // Create an async server with custom configuration
-        McpAsyncServer asyncServer= ultraRAG.getMcpAsyncServer();
+        McpAsyncServer asyncServer= ultraRAG.start();
 
         // Keep the server running
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

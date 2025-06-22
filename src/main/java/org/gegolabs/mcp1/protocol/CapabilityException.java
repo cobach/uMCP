@@ -10,7 +10,7 @@ public class CapabilityException extends Exception{
      * @param executionFailed the detail message
      * @param e the cause
      */
-    public CapabilityException(String executionFailed, Exception e) {
+    public CapabilityException(String executionFailed, Throwable e) {
         super(executionFailed, e);
     }
 

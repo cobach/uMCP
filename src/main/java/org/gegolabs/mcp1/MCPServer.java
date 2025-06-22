@@ -9,7 +9,9 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
 import org.gegolabs.mcp1.protocol.Capability;
+import org.gegolabs.mcp1.protocol.CapabilityException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -54,12 +56,19 @@ public class MCPServer {
     McpAsyncServer mcpAsyncServer;
 
     /**
-     * Gets the MCP async server instance, creating it if it doesn't exist.
-     * Registers all tools with the server.
-     *
-     * @return the MCP async server instance
+     * List of tool containers created for this server.
+     * Used to manage the lifecycle of tools.
      */
-    public McpAsyncServer getMcpAsyncServer(){
+    private List<ToolContainer> toolContainers = new ArrayList<>();
+
+    /**
+     * Starts the MCP asynchronous server. If the server is not already initialized, it sets up
+     * the server instance with the provided transport provider, server information, and capabilities.
+     * Registers all tools synchronously before returning the server instance.
+     *
+     * @return the initialized and started {@code McpAsyncServer} instance
+     */
+    public McpAsyncServer start(){
         if(mcpAsyncServer ==null){
             mcpAsyncServer = McpServer.async(transportProvider)
                     .serverInfo(name, version)
@@ -74,14 +83,27 @@ public class MCPServer {
             // Register tools synchronously before returning
             for(Capability tool:tools){
                 try {
-                    McpServerFeatures.AsyncToolSpecification toolSpec = toolSpecificationToAsyncToolSpecification(tool);
+                    ToolContainer toolContainer = ToolContainer.builder().tool(tool).build();
+                    toolContainers.add(toolContainer);
+
+                    // Get the tool specification without initializing the tool
+                    McpServerFeatures.AsyncToolSpecification toolSpec = toolContainer.getUninitializedAsyncToolSpecification();
                     mcpAsyncServer.addTool(toolSpec)
-                            .doOnSuccess(v -> log.info("Tool registered successfully: {}", tool.getClass().getSimpleName()))
+                            .doOnSuccess(v -> {
+                                log.info("Tool registered successfully: {}", tool.getClass().getSimpleName());
+                                try {
+                                    // Initialize the tool after it has been successfully registered
+                                    toolContainer.initialize();
+                                } catch (CapabilityException e) {
+                                    log.error("Failed to initialize tool: {}", tool.getClass().getSimpleName(), e);
+                                }
+                            })
                             .doOnError(e -> log.error("Failed to register tool: {}", tool.getClass().getSimpleName(), e))
                             .block(); // Block to ensure tool is registered
                 } catch (Exception e) {
                     log.error("Exception registering tool: {}", tool.getClass().getSimpleName(), e);
                 }
+
             }
 
 
@@ -100,9 +122,19 @@ public class MCPServer {
     }
 
     /**
-     * Gracefully closes the MCP server.
+     * Gracefully closes the MCP server and shuts down all tools.
      */
     public void close(){
+        // Shutdown all tools
+        for (ToolContainer toolContainer : toolContainers) {
+            try {
+                toolContainer.shutdown();
+            } catch (CapabilityException e) {
+                log.error("Error shutting down tool: {}", e.getMessage(), e);
+            }
+        }
+
+        // Close the server
         mcpAsyncServer.closeGracefully()
                 .doOnSuccess(v -> log.info("Server closed"))
                 .subscribe();
@@ -113,8 +145,11 @@ public class MCPServer {
      *
      * @param toolSpec the capability to convert
      * @return the corresponding AsyncToolSpecification
+     * @throws CapabilityException if there is an error creating the tool specification
      */
-    private McpServerFeatures.AsyncToolSpecification toolSpecificationToAsyncToolSpecification(Capability toolSpec){
-        return ToolContainer.builder().tool(toolSpec).build().getAsyncToolSpecification();
+    private McpServerFeatures.AsyncToolSpecification toolSpecificationToAsyncToolSpecification(Capability toolSpec) throws CapabilityException {
+        ToolContainer toolContainer = ToolContainer.builder().tool(toolSpec).build();
+        toolContainers.add(toolContainer);
+        return toolContainer.getAsyncToolSpecification();
     }
 }

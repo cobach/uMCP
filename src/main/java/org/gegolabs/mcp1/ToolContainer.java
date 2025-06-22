@@ -8,10 +8,9 @@ import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.gegolabs.mcp1.protocol.Capability;
 import org.gegolabs.mcp1.protocol.CapabilityException;
-import org.gegolabs.mcp1.protocol.Info;
+import org.gegolabs.mcp1.protocol.Description;
+import org.gegolabs.mcp1.protocol.Name;
 import reactor.core.publisher.Mono;
-
-import java.util.Map;
 
 /**
  * Container for MCP tools that provides conversion to AsyncToolSpecification.
@@ -30,12 +29,70 @@ public class ToolContainer{
     private Capability tool;
 
     /**
+     * Flag indicating whether the tool has been initialized.
+     */
+    private boolean initialized = false;
+
+    /**
+     * Initializes the capability tool.
+     * This method should be called before using the tool.
+     *
+     * @throws CapabilityException if initialization fails
+     */
+    public void initialize() throws CapabilityException {
+        if (!initialized) {
+            log.info("Initializing tool: {}", getToolName());
+            tool.initialize();
+            initialized = true;
+        }
+    }
+
+    /**
+     * Shuts down the capability tool.
+     * This method should be called when the tool is no longer needed.
+     *
+     * @throws CapabilityException if shutdown fails
+     */
+    public void shutdown() throws CapabilityException {
+        if (initialized) {
+            log.info("Shutting down tool: {}", getToolName());
+            tool.shutdown();
+            initialized = false;
+        }
+    }
+
+    /**
      * Creates and returns an AsyncToolSpecification for the contained tool.
+     * Initializes the tool if it hasn't been initialized yet.
      * 
      * @return the AsyncToolSpecification for the tool, or null if the argument class cannot be determined
+     * @throws CapabilityException if tool initialization fails
      */
-    public McpServerFeatures.AsyncToolSpecification getAsyncToolSpecification(){
+    public McpServerFeatures.AsyncToolSpecification getAsyncToolSpecification() throws CapabilityException {
+        // Initialize the tool if it hasn't been initialized yet
+        initialize();
 
+        return createAsyncToolSpecification();
+    }
+
+    /**
+     * Creates and returns an AsyncToolSpecification for the contained tool without initializing it.
+     * This method is used by MCPServer to get the specification before initializing the tool.
+     * 
+     * @return the AsyncToolSpecification for the tool, or null if the argument class cannot be determined
+     * @throws CapabilityException if there is an error creating the tool specification
+     */
+    public McpServerFeatures.AsyncToolSpecification getUninitializedAsyncToolSpecification() throws CapabilityException {
+        return createAsyncToolSpecification();
+    }
+
+    /**
+     * Internal method to create an AsyncToolSpecification without initializing the tool.
+     * 
+     * @return the AsyncToolSpecification for the tool, or null if the argument class cannot be determined
+     * @throws CapabilityException if there is an error creating the tool specification
+     */
+    private McpServerFeatures.AsyncToolSpecification createAsyncToolSpecification() throws CapabilityException {
         Class<?> toolExecuteArgumentClass = MiscTools.getToolExecuteArgumentClass(tool);
         if(toolExecuteArgumentClass == null){
             log.error("Could not determine the argument class for tool {}", tool.getClass().getCanonicalName());
@@ -118,12 +175,20 @@ public class ToolContainer{
 
     /**
      * Gets the name of the tool.
+     * First tries to get the name from the Name annotation.
+     * If not available, falls back to the simple class name.
      * 
-     * @return the simple class name of the tool
+     * @return the tool name
      */
     private String getToolName(){
-        String toolName = tool.getClass().getSimpleName();
-        return toolName;
+        // Try to get name from Name annotation
+        Name name = tool.getClass().getAnnotation(Name.class);
+        if (name != null && !name.value().isEmpty()) {
+            return name.value();
+        }
+
+        // Fallback to simple class name if no annotation is present
+        return tool.getClass().getSimpleName();
     }
 
     /**
@@ -135,9 +200,9 @@ public class ToolContainer{
      */
     private String getToolDescription(){
         // Try to get description from Info annotation
-        Info info = tool.getClass().getAnnotation(Info.class);
-        if (info != null && !info.value().isEmpty()) {
-            return info.value();
+        Description description = tool.getClass().getAnnotation(Description.class);
+        if (description != null && !description.value().isEmpty()) {
+            return description.value();
         }
 
         // Fallback to canonical class name if no annotation is present
@@ -181,5 +246,4 @@ public class ToolContainer{
                clazz == Byte.class || 
                clazz == Short.class;
     }
-
 }

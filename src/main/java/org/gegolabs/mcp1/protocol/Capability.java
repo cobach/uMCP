@@ -14,6 +14,28 @@ import java.util.concurrent.ForkJoinPool;
 public interface Capability<I, O> {
 
     /**
+     * Initializes the capability.
+     * This method is called when the capability is registered with the server.
+     * Implementations should perform any necessary setup here.
+     *
+     * @throws CapabilityException if initialization fails
+     */
+    default void initialize() throws CapabilityException {
+        // Default implementation does nothing
+    }
+
+    /**
+     * Shuts down the capability.
+     * This method is called when the capability is being removed or the server is shutting down.
+     * Implementations should perform any necessary cleanup here.
+     *
+     * @throws CapabilityException if shutdown fails
+     */
+    default void shutdown() throws CapabilityException {
+        // Default implementation does nothing
+    }
+
+    /**
      * Synchronous execution (blocks until completion).
      * By default, calls executeAsync().get()
      *

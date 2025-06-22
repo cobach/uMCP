@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.PARAMETER, ElementType.METHOD})
-public @interface Info {
+public @interface Description {
     /**
      * Description of the Capability. This is the default parameter, so it can be used without explicitly naming it.
      * @return the description of what this Capability does
