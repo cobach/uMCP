@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(cp:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:modelcontextprotocol.io)",
+      "WebFetch(domain:github.com)",
+      "Bash(./gradlew dependencies:*)",
+      "Bash(./gradlew build:*)",
+      "Bash(./gradlew:*)",
+      "Bash(javac:*)",
+      "Bash(java:*)",
+      "Bash(jar:*)",
+      "Bash(echo $HOME)",
+      "Bash(mkdir:*)",
+      "Bash(cat:*)",
+      "mcp__ultrarag__datetime",
+      "Bash(timeout 5s java:*)",
+      "Bash(true)",
+      "Bash(whois:*)",
+      "Bash(timeout:*)",
+      "Bash(grep:*)",
+      "WebFetch(domain:modelcontextprotocol.info)",
+      "Bash(python3:*)",
+      "Bash(chmod:*)",
+      "Bash(./test_mcp_inspector.sh:*)"
+    ],
+    "deny": []
+  }
+}

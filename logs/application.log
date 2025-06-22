@@ -1,0 +1,29 @@
+10:07:57.951 [main] INFO  org.gegolabs.mcp1.MiscTools - Logging configured to write to file: logs/application.log
+10:07:58.098 [main] DEBUG reactor.util.Loggers - Using Slf4j logging framework
+10:07:58.129 [pool-1-thread-1] DEBUG i.m.s.t.StdioServerTransportProvider - Received JSON message: {"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{"roots":{}},"clientInfo":{"name":"claude","version":"0.1.0"}},"jsonrpc":"2.0","id":0}
+10:07:58.131 [pool-1-thread-1] DEBUG i.m.spec.McpSchema - Received JSON message: {"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{"roots":{}},"clientInfo":{"name":"claude","version":"0.1.0"}},"jsonrpc":"2.0","id":0}
+10:07:58.159 [main] DEBUG c.g.v.j.g.i.SchemaGenerationContextImpl - storing configured custom inline type for java.lang.String as definition (since it is the main schema "#")
+10:07:58.167 [main] INFO  org.gegolabs.mcp1.ToolContainer - Tool schema: JsonSchema[type=object, properties={value=JsonSchema[type=string, properties={}, required=null, additionalProperties=null, defs={}, definitions={}]}, required=[value], additionalProperties=false, defs=null, definitions=null]
+10:07:58.179 [main] DEBUG i.m.server.McpAsyncServer - Added tool handler: DomainAvailability
+10:07:58.177 [pool-1-thread-1] DEBUG i.m.spec.McpServerSession - Received request: JSONRPCRequest[jsonrpc=2.0, method=initialize, id=0, params={protocolVersion=2025-03-26, capabilities={roots={}}, clientInfo={name=claude, version=0.1.0}}]
+10:07:58.181 [main] INFO  org.gegolabs.mcp1.MCPServer - Tool registered successfully: DomainAvailability
+10:07:58.181 [main] DEBUG c.g.v.j.g.i.SchemaGenerationContextImpl - generating definition for java.lang.Void
+10:07:58.182 [main] DEBUG c.g.v.j.g.i.SchemaGenerationContextImpl - collecting non-static fields and methods from java.lang.Void
+10:07:58.184 [main] INFO  org.gegolabs.mcp1.ToolContainer - Tool schema: JsonSchema[type=object, properties={}, required=null, additionalProperties=false, defs={}, definitions={}]
+10:07:58.185 [main] DEBUG i.m.server.McpAsyncServer - Added tool handler: SystemInformation
+10:07:58.185 [main] INFO  org.gegolabs.mcp1.MCPServer - Tool registered successfully: SystemInformation
+10:07:58.187 [pool-1-thread-1] INFO  i.m.server.McpAsyncServer - Client initialize request - Protocol: 2025-03-26, Capabilities: ClientCapabilities[experimental=null, roots=RootCapabilities[listChanged=null], sampling=null], Info: Implementation[name=claude, version=0.1.0]
+10:07:58.191 [pool-1-thread-1] WARN  i.m.server.McpAsyncServer - Client requested unsupported protocol version: 2025-03-26, so the server will suggest the 2024-11-05 version instead
+10:07:58.199 [pool-1-thread-1] DEBUG i.m.s.t.StdioServerTransportProvider - Received JSON message: {"method":"notifications/initialized","jsonrpc":"2.0"}
+10:07:58.199 [pool-1-thread-1] DEBUG i.m.spec.McpSchema - Received JSON message: {"method":"notifications/initialized","jsonrpc":"2.0"}
+10:07:58.200 [pool-1-thread-1] DEBUG i.m.spec.McpServerSession - Received notification: JSONRPCNotification[jsonrpc=2.0, method=notifications/initialized, params=null]
+10:07:58.201 [pool-1-thread-1] DEBUG i.m.s.t.StdioServerTransportProvider - Received JSON message: {"method":"tools/list","jsonrpc":"2.0","id":1}
+10:07:58.201 [pool-1-thread-1] DEBUG i.m.spec.McpSchema - Received JSON message: {"method":"tools/list","jsonrpc":"2.0","id":1}
+10:07:58.201 [pool-1-thread-1] DEBUG i.m.spec.McpServerSession - Received request: JSONRPCRequest[jsonrpc=2.0, method=tools/list, id=1, params=null]
+10:07:58.202 [pool-1-thread-1] DEBUG i.m.s.t.StdioServerTransportProvider - Received JSON message: {"method":"prompts/list","jsonrpc":"2.0","id":2}
+10:07:58.202 [pool-1-thread-1] DEBUG i.m.spec.McpSchema - Received JSON message: {"method":"prompts/list","jsonrpc":"2.0","id":2}
+10:07:58.202 [pool-1-thread-1] DEBUG i.m.spec.McpServerSession - Received request: JSONRPCRequest[jsonrpc=2.0, method=prompts/list, id=2, params=null]
+10:07:58.203 [pool-1-thread-1] DEBUG i.m.s.t.StdioServerTransportProvider - Received JSON message: {"method":"resources/list","jsonrpc":"2.0","id":3}
+10:07:58.204 [pool-1-thread-1] DEBUG i.m.spec.McpSchema - Received JSON message: {"method":"resources/list","jsonrpc":"2.0","id":3}
+10:07:58.204 [pool-1-thread-1] DEBUG i.m.spec.McpServerSession - Received request: JSONRPCRequest[jsonrpc=2.0, method=resources/list, id=3, params=null]
+12:54:04.903 [pool-1-thread-1] DEBUG i.m.s.t.StdioServerTransportProvider - Session transport closed

@@ -1,0 +1,124 @@
+plugins {
+    id 'java'
+    id("io.freefair.lombok") version "8.13.1"
+    id 'application'
+    id 'maven-publish'
+}
+
+group = 'org.gegolabs'
+version = '1.0.0'
+
+application {
+    mainClass = 'org.gegolabs.mcp1.Main'
+    applicationDefaultJvmArgs = [
+        '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.util.concurrent=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.io=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.net=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.nio=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.time=ALL-UNNAMED',
+        '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-opens', 'java.base/sun.util.calendar=ALL-UNNAMED'
+    ]
+}
+
+repositories {
+    mavenCentral()
+}
+
+
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+// Replace the shorthand with explicit module dependencies
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+
+
+
+    implementation 'io.modelcontextprotocol.sdk:mcp:0.10.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    //implementation 'org.slf4j:slf4j-api:2.0.9'
+    implementation 'ch.qos.logback:logback-classic:1.5.13'
+
+    //Generación dinámica de schemas
+    //implementation 'com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39'
+    implementation 'com.github.victools:jsonschema-generator:4.31.1'
+
+    testImplementation 'org.mockito:mockito-core:5.8.0'
+
+
+    implementation 'commons-net:commons-net:3.9.0'
+
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+    withJavadocJar()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.gegolabs.mcp1.Main'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Configure Javadoc to ignore warnings from generated code
+javadoc {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+// Configuración de publicación
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+
+            //artifactId = project.name // o ponle un nombre específico: artifactId = 'mi-libreria'
+
+
+            // Metadata adicional (opcional)
+            pom {
+                name = 'uMCP'
+                description = 'Framework para desarrollo de servidores MCP'
+            }
+        }
+    }
+}
+
+
+// Variables capturadas antes del bloque doLast para evitar deprecación
+def projectGroup = project.group
+def projectName = project.name
+def projectVersion = project.version
+def userHome = System.properties['user.home']
+
+tasks.register('publishLocal') {
+    dependsOn 'publishToMavenLocal'
+
+    doLast {
+        println "\n=========================================="
+        println "✅ JAR publicado exitosamente!"
+        println "=========================================="
+        println "📍 Ubicación: ${userHome}/.m2/repository"
+        println "\n📦 Para usar esta librería en otro proyecto, agrega:"
+        println "\ndependencies {"
+        println "    implementation '${projectGroup}:${projectName}:${projectVersion}'"
+        println "}"
+        println "\n💡 Asegúrate de tener 'mavenLocal()' en repositories"
+        println "==========================================\n"
+    }
+}
