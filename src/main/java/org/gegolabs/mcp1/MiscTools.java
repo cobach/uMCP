@@ -126,6 +126,26 @@ public class MiscTools {
                     configBuilder.without(Option.NONPUBLIC_NONSTATIC_FIELDS_WITHOUT_GETTERS);
                     configBuilder.without(Option.NONSTATIC_NONVOID_NONGETTER_METHODS);
 
+                    // Add configuration for using camelCase in property names
+                    configBuilder.forFields().withPropertyNameOverrideResolver(field -> {
+                        String originalName = field.getName();
+                        // Convert snake_case to camelCase if necessary
+                        if (originalName.contains("_")) {
+                            StringBuilder camelCase = new StringBuilder();
+                            boolean capitalizeNext = false;
+                            for (char c : originalName.toCharArray()) {
+                                if (c == '_') {
+                                    capitalizeNext = true;
+                                } else {
+                                    camelCase.append(capitalizeNext ? Character.toUpperCase(c) : c);
+                                    capitalizeNext = false;
+                                }
+                            }
+                            return camelCase.toString();
+                        }
+                        return originalName;
+                    });
+
                     SchemaGeneratorConfig config = configBuilder.build();
                     SchemaGenerator generator = new SchemaGenerator(config);
                     JsonNode primitiveSchema = generator.generateSchema(clazz);
@@ -145,6 +165,26 @@ public class MiscTools {
                     configBuilder.with(Option.FORBIDDEN_ADDITIONAL_PROPERTIES_BY_DEFAULT);
                     configBuilder.without(Option.NONPUBLIC_NONSTATIC_FIELDS_WITHOUT_GETTERS);
                     configBuilder.without(Option.NONSTATIC_NONVOID_NONGETTER_METHODS);
+
+                    // Add configuration for using camelCase in property names
+                    configBuilder.forFields().withPropertyNameOverrideResolver(field -> {
+                        String originalName = field.getName();
+                        // Convert snake_case to camelCase if necessary
+                        if (originalName.contains("_")) {
+                            StringBuilder camelCase = new StringBuilder();
+                            boolean capitalizeNext = false;
+                            for (char c : originalName.toCharArray()) {
+                                if (c == '_') {
+                                    capitalizeNext = true;
+                                } else {
+                                    camelCase.append(capitalizeNext ? Character.toUpperCase(c) : c);
+                                    capitalizeNext = false;
+                                }
+                            }
+                            return camelCase.toString();
+                        }
+                        return originalName;
+                    });
 
                     SchemaGeneratorConfig config = configBuilder.build();
                     SchemaGenerator generator = new SchemaGenerator(config);

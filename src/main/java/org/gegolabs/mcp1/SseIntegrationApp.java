@@ -3,6 +3,7 @@ package org.gegolabs.mcp1;
 import lombok.extern.slf4j.Slf4j;
 import org.gegolabs.mcp1.impl.DomainAvailability;
 import org.gegolabs.mcp1.impl.SystemInformation;
+import org.gegolabs.mcp1.impl.tmp.SearchDocumentsTool;
 
 /**
  * Main application class for the MCP server.
@@ -37,6 +38,7 @@ public class SseIntegrationApp {
                 .transport_Sse()
                 .tool(new DomainAvailability())
                 .tool(new SystemInformation())
+                .tool(new SearchDocumentsTool())
                 .build();
 
         // Create an async server with custom configuration
