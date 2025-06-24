@@ -70,7 +70,7 @@ The MCP server is configured in `Main.java`:
 - Uses stdio transport for communication
 - Server name: "ultraRAG"
 - Version: "0.1.0"
-- Main class: `org.gegolabs.mcp1.Main`
+- Main class: `org.gegolabs.mcp1.StdioIntegrationApp`
 
 ### JVM Arguments Configuration
 

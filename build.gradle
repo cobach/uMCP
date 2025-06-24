@@ -38,7 +38,6 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 
 
-
     implementation 'io.modelcontextprotocol.sdk:mcp:0.10.0'
     implementation 'com.google.code.gson:gson:2.10.1'
     //implementation 'org.slf4j:slf4j-api:2.0.9'
@@ -53,6 +52,8 @@ dependencies {
 
     implementation 'commons-net:commons-net:3.9.0'
 
+    implementation 'org.eclipse.jetty:jetty-server:12.0.22'
+    implementation 'org.eclipse.jetty.ee10:jetty-ee10-servlet:12.0.22'
 }
 
 java {
@@ -105,6 +106,75 @@ def projectGroup = project.group
 def projectName = project.name
 def projectVersion = project.version
 def userHome = System.properties['user.home']
+
+
+tasks.register('generateRunScript') {
+    doLast {
+        def scriptFile = file('run.sh')
+        def mainClassName = application.mainClass.get()
+        def jvmArgs = application.applicationDefaultJvmArgs
+        def jarFileName = "${projectName}-${projectVersion}.jar"
+
+        def scriptContent = """#!/bin/bash
+
+# Script to run the MCP server application
+
+# Set the main class
+MAIN_CLASS="${mainClassName}"
+
+# JVM arguments from build.gradle
+JVM_ARGS=(
+"""
+        // Group JVM arguments in pairs (--add-opens and its value)
+        for (int i = 0; i < jvmArgs.size(); i += 2) {
+            if (i + 1 < jvmArgs.size()) {
+                scriptContent += "    \"${jvmArgs[i]}\" \"${jvmArgs[i+1]}\"\n"
+            } else {
+                scriptContent += "    \"${jvmArgs[i]}\"\n"
+            }
+        }
+
+        scriptContent += """)
+
+# Check if Gradle wrapper exists
+if [ -f "./gradlew" ]; then
+    echo "Starting application using Gradle wrapper..."
+    ./gradlew run "\$@"
+else
+    # If no Gradle wrapper, try to run the JAR directly
+    # First, check if the JAR exists
+    JAR_FILE="build/libs/${jarFileName}"
+    if [ -f "\$JAR_FILE" ]; then
+        echo "Starting application using Java..."
+        java "\${JVM_ARGS[@]}" -jar "\$JAR_FILE" "\$@"
+    else
+        echo "JAR file not found. Building the project first..."
+        # Try to build with gradle if available
+        if command -v gradle &> /dev/null; then
+            gradle build
+            if [ -f "\$JAR_FILE" ]; then
+                echo "Starting application using Java..."
+                java "\${JVM_ARGS[@]}" -jar "\$JAR_FILE" "\$@"
+            else
+                echo "Failed to build the JAR file. Please build the project manually."
+                exit 1
+            fi
+        else
+            echo "Neither Gradle wrapper nor Gradle command found. Please build the project manually."
+            exit 1
+        fi
+    fi
+fi
+
+echo "Application has been terminated."
+"""
+
+        scriptFile.text = scriptContent
+        scriptFile.setExecutable(true)
+
+        println "Run script generated at: ${scriptFile.absolutePath}"
+    }
+}
 
 tasks.register('publishLocal') {
     dependsOn 'publishToMavenLocal'

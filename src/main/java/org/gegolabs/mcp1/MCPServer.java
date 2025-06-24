@@ -1,15 +1,21 @@
 package org.gegolabs.mcp1;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
+import io.modelcontextprotocol.server.transport.HttpServletSseServerTransportProvider;
+import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpServerTransportProvider;
+import jakarta.servlet.http.HttpServlet;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
 import org.gegolabs.mcp1.protocol.Capability;
 import org.gegolabs.mcp1.protocol.CapabilityException;
+import org.gegolabs.mcp1.transport.McpSseServer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +25,30 @@ import java.util.List;
  * This class manages the MCP server lifecycle and tool registration.
  * It provides a builder pattern for easy configuration.
  * 
- * Use the {@link #builder()} method to create a new instance with the builder pattern.
+ * Use the builder() method to create a new instance with the builder pattern.
  */
 @Slf4j
 @Builder
 public class MCPServer {
+    private McpSseServer mcpSseServer;
+
+    public static class MCPServerBuilder  {
+        public MCPServerBuilder transport_Stdio() {
+            transport=new StdioServerTransportProvider(new ObjectMapper());
+            return this;
+        }
+        public MCPServerBuilder transport_Sse() {
+            HttpServletSseServerTransportProvider provider = new HttpServletSseServerTransportProvider(new ObjectMapper(), "/sse/mcp/message");
+            transport=provider;
+            httpServlet=provider;
+            return this;
+        }
+    }
+
+    @Getter
+    private HttpServlet httpServlet;
+
+
     /**
      * List of capability tools to be registered with the server.
      * Each tool provides a specific functionality to the MCP server.
@@ -35,7 +60,12 @@ public class MCPServer {
      * The transport provider for the MCP server.
      * Handles the communication between the server and clients.
      */
-    private McpServerTransportProvider transportProvider;
+
+    @lombok.NonNull
+    private McpServerTransportProvider transport;
+
+
+
 
     /**
      * The name of the MCP server.
@@ -59,18 +89,20 @@ public class MCPServer {
      * List of tool containers created for this server.
      * Used to manage the lifecycle of tools.
      */
-    private List<ToolContainer> toolContainers = new ArrayList<>();
+    @Builder.Default
+    private List<ToolContainer> toolContainers=new ArrayList<>();
 
     /**
      * Starts the MCP asynchronous server. If the server is not already initialized, it sets up
      * the server instance with the provided transport provider, server information, and capabilities.
      * Registers all tools synchronously before returning the server instance.
      *
-     * @return the initialized and started {@code McpAsyncServer} instance
      */
-    public McpAsyncServer start(){
-        if(mcpAsyncServer ==null){
-            mcpAsyncServer = McpServer.async(transportProvider)
+    public void start() throws Exception {
+
+        if(mcpAsyncServer==null){
+
+            mcpAsyncServer = McpServer.async(transport)
                     .serverInfo(name, version)
                     .capabilities(McpSchema.ServerCapabilities.builder()
                             .resources(true,true)     // Enable resource support. listChanged indicates whether the server will emit notifications when the list of available tools changes.
@@ -116,9 +148,16 @@ public class MCPServer {
                     .subscribe();
             */
 
+            if(httpServlet!=null){
+
+                mcpSseServer = new McpSseServer(this);
+
+                mcpSseServer.start();
+                System.out.println("MCP SSE Server started");
+            }
+
 
         }
-        return mcpAsyncServer;
     }
 
     /**

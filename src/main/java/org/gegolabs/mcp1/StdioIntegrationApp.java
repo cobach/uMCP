@@ -1,9 +1,5 @@
 package org.gegolabs.mcp1;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.modelcontextprotocol.server.McpAsyncServer;
-import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
-import io.modelcontextprotocol.spec.McpServerTransportProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.gegolabs.mcp1.impl.DomainAvailability;
 import org.gegolabs.mcp1.impl.SystemInformation;
@@ -15,7 +11,7 @@ import org.gegolabs.mcp1.impl.SystemInformation;
  * The class provides a default constructor.
  */
 @Slf4j
-public class Main {
+public class StdioIntegrationApp {
 
     /**
      * Static initializer block that sets up logging to a file.
@@ -24,39 +20,30 @@ public class Main {
         MiscTools.initializeLogInFile("logs/application.log");
     }
 
-
-    /**
-     * Gets the transport provider for the MCP server.
-     * 
-     * @return the configured transport provider
-     */
-    public static McpServerTransportProvider getTransportProvider() {
-        return new StdioServerTransportProvider(new ObjectMapper());
-    }
-
-
-
     /**
      * Main entry point for the application.
      * Starts the MCP server and keeps it running until interrupted.
      *
+     *
+     * Para probar: npx -y @modelcontextprotocol/inspector
+     *
      * @param args command line arguments
      */
-    public static void main(String[] args) {
-        MCPServer ultraRAG = MCPServer.builder()
+    public static void main(String[] args) throws Exception {
+        MCPServer mcpServer = MCPServer.builder()
                 .name("ultraRAG")
                 .version("0.1.0")
-                .transportProvider(getTransportProvider())
+                .transport_Stdio()
                 .tool(new DomainAvailability())
                 .tool(new SystemInformation())
                 .build();
         // Create an async server with custom configuration
-        McpAsyncServer asyncServer= ultraRAG.start();
+        mcpServer.start();
 
         // Keep the server running
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.info("Shutting down MCP server...");
-            ultraRAG.close();
+            mcpServer.close();
         }));
 
         // Block the main thread to keep the server alive
@@ -67,7 +54,4 @@ public class Main {
             Thread.currentThread().interrupt();
         }
     }
-
-
-
 }

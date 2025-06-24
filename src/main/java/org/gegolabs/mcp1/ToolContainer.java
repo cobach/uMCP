@@ -31,7 +31,7 @@ public class ToolContainer{
     /**
      * Flag indicating whether the tool has been initialized.
      */
-    private boolean initialized = false;
+    private boolean initialized;
 
     /**
      * Initializes the capability tool.
