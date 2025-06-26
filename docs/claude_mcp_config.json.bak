@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "ultrarag": {
+      "command": "java",
+      "args": [
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+        "-jar",
+        "/Users/cesar/Documents/git-projects/2025/ultraRAG/build/libs/ultraRAG-1.0-SNAPSHOT.jar"
+      ],
+      "name": "UltraRAG MCP Server",
+      "description": "MCP server implementation for UltraRAG project"
+    }
+  }
+}

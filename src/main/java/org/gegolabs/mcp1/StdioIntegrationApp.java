@@ -17,7 +17,7 @@ public class StdioIntegrationApp {
      * Static initializer block that sets up logging to a file.
      */
     static{
-        MiscTools.initializeLogInFile("logs/application.log");
+        MiscTools.initializeLogInFile("/var/logs/upro/umcp-stdio.log");
     }
 
     /**
