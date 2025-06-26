@@ -41,5 +41,8 @@ bin/
 ### Logs ###
 logs/
 
+### Build output ###
+install/
+
 ### Mac OS ###
 .DS_Store
