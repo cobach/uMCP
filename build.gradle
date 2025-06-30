@@ -28,26 +28,20 @@ repositories {
     mavenCentral()
 }
 
-
-
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
-// Replace the shorthand with explicit module dependencies
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testImplementation 'org.junit.jupiter:junit-jupiter-params'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 
-
     implementation 'io.modelcontextprotocol.sdk:mcp:0.10.0'
     implementation 'com.google.code.gson:gson:2.10.1'
-    //implementation 'org.slf4j:slf4j-api:2.0.9'
     implementation 'ch.qos.logback:logback-classic:1.5.13'
 
     //Generación dinámica de schemas
     implementation 'com.github.victools:jsonschema-generator:4.31.1'
 
     testImplementation 'org.mockito:mockito-core:5.8.0'
-
 
     implementation 'commons-net:commons-net:3.9.0'
 
@@ -64,16 +58,18 @@ java {
 
 jar {
     manifest {
-        attributes 'Main-Class': '${mainClass}'
+        attributes 'Main-Class': application.mainClass.get()
     }
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
+
 tasks.installDist {
     destinationDir = file("install")
 }
+
 test {
     useJUnitPlatform()
 }
@@ -89,10 +85,6 @@ publishing {
         maven(MavenPublication) {
             from components.java
 
-            //artifactId = project.name // o ponle un nombre específico: artifactId = 'mi-libreria'
-
-
-            // Metadata adicional (opcional)
             pom {
                 name = 'uMCP'
                 description = 'Framework para desarrollo de servidores MCP'
@@ -101,13 +93,11 @@ publishing {
     }
 }
 
-
 // Variables capturadas antes del bloque doLast para evitar deprecación
 def projectGroup = project.group
 def projectName = project.name
 def projectVersion = project.version
 def userHome = System.properties['user.home']
-
 
 tasks.register('publishLocal') {
     dependsOn 'publishToMavenLocal'
