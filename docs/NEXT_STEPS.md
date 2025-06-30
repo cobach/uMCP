@@ -2,29 +2,28 @@
 
 ## Estado Actual (2025-01-30)
 
-uMCP está funcionalmente completo como framework para crear servidores MCP, pero está bloqueado por dos bugs en el SDK oficial de Java:
+uMCP está funcionalmente completo como framework para crear servidores MCP con transporte stdio. Los bugs del SDK oficial han sido resueltos localmente:
 
-1. **Bug de Timeout (PR #350)**: Orden incorrecto de operadores en reactive streams
-2. **Bug de Deserialización (PR #355)**: Falla al deserializar parámetros de CallToolRequest
+1. **Bug de Timeout (PR #350)**: ✅ Resuelto - Orden de operadores corregido
+2. **Bug de Deserialización (PR #355)**: ✅ Resuelto - CallToolRequest deserializa correctamente
 
-## Acciones Inmediatas
+Actualmente usando MCP SDK 0.10.1-SNAPSHOT con ambos fixes aplicados localmente.
 
-### 1. Esperar resolución de bugs del SDK
-- Monitorear PRs #350 y #355 en el repositorio oficial
-- Una vez fusionados, actualizar a la nueva versión del SDK
+## Trabajo en Progreso
 
-### 2. Mientras tanto, considerar:
-- **Opción A**: Usar versión fork del SDK con los fixes aplicados localmente
-- **Opción B**: Implementar workarounds temporales en uMCP
-- **Opción C**: Documentar las limitaciones y esperar la versión oficial
+### Implementación de Transporte TCP (En curso)
+- Plan detallado disponible en `TCP_TRANSPORT_IMPLEMENTATION_PLAN.md`
+- Arquitectura TransportProvider diseñada
+- Estimado: 5 días de desarrollo
 
-## Plan de Desarrollo Post-Fix
+## Plan de Desarrollo
 
-### Fase 1: Transporte TCP (1-2 semanas)
-- Implementar `TcpServerTransportProvider` nativo
-- Crear abstracción de transporte en uMCP
-- Añadir ejemplos de uso con TCP
-- Testing exhaustivo con Node.js SDK
+### Fase 1: Transporte TCP (Inmediato - 5 días)
+- ✅ Plan de implementación completado
+- ⏳ Implementar `TcpServerTransportProvider`
+- ⏳ Crear abstracción TransportProvider
+- ⏳ Testing con Node.js SDK
+- ⏳ Documentación y ejemplos
 
 ### Fase 2: Funcionalidades MCP Completas (2-3 semanas)
 - **Resources**: Sistema de recursos con URIs y templates
@@ -39,37 +38,8 @@ uMCP está funcionalmente completo como framework para crear servidores MCP, per
 - Conectores para APIs externas
 - Sistema de plugins
 
-### Fase 4: Documentación y Distribución (1 semana)
-- Documentación completa con ejemplos
-- Guías de inicio rápido
-- Publicación en Maven Central
-- Sitio web del proyecto
-
-## Arquitectura Propuesta para TCP
-
-```java
-// Abstracción de transporte en uMCP
-public interface TransportProvider {
-    McpAsyncServer createServer(ServerConfig config);
-}
-
-// Implementaciones
-public class StdioTransportProvider implements TransportProvider { }
-public class TcpTransportProvider implements TransportProvider { }
-public class SseTransportProvider implements TransportProvider { }
-
-// Uso simplificado
-MCPServer.builder()
-    .transport(Transport.TCP)
-    .port(3000)
-    .addTool(new MyTool())
-    .build()
-    .start();
-```
-
-## Mejoras Arquitectónicas
-
-1. **Anotaciones para Tools**:
+### Fase 4: Mejoras Arquitectónicas (1-2 semanas)
+- **Anotaciones para Tools**:
 ```java
 @Tool(name = "get_weather", description = "Get weather information")
 public class WeatherTool implements SyncCapability<WeatherInput, WeatherOutput> {
@@ -77,40 +47,72 @@ public class WeatherTool implements SyncCapability<WeatherInput, WeatherOutput> 
 }
 ```
 
-2. **Auto-descubrimiento de Tools**:
+- **Auto-descubrimiento de Tools**:
 ```java
 MCPServer.builder()
     .scanPackage("com.myapp.tools")
     .build();
 ```
 
-3. **Configuración declarativa**:
-```yaml
-mcp:
-  server:
-    name: "MyMCPServer"
-    version: "1.0.0"
-    transport: tcp
-    port: 3000
-  tools:
-    scan-packages:
-      - com.myapp.tools
-      - com.myapp.resources
-```
+- **Configuración declarativa (YAML/Properties)**
 
-## Consideraciones
+### Fase 5: Documentación y Distribución (1 semana)
+- Documentación completa con ejemplos
+- Guías de inicio rápido
+- Publicación en Maven Central
+- Sitio web del proyecto
 
+## Tareas Administrativas
+
+### Gestión del SDK
+- Monitorear fusión de PRs #350 y #355 en el repositorio oficial
+- Una vez fusionados, actualizar a la versión oficial del SDK
+- Remover dependencia de la versión local
+
+### Mejoras de Calidad
+- Aumentar cobertura de tests
+- Implementar benchmarks de rendimiento
+- Añadir más ejemplos de uso
+
+## Consideraciones Técnicas
+
+### Compatibilidad
 - Mantener compatibilidad con la abstracción actual
-- Priorizar simplicidad de uso
-- Asegurar que los tests cubran todos los transportes
-- Documentar claramente las diferencias entre transportes
+- Soporte simultáneo para múltiples transportes
+- API consistente entre transportes
 
-## Cronograma Estimado
+### Testing
+- Tests unitarios para cada transporte
+- Tests de integración con clientes reales
+- Tests de rendimiento y concurrencia
 
-- **Semana 1-2**: Resolución de bugs del SDK (esperando)
-- **Semana 3-4**: Implementación TCP
-- **Semana 5-7**: Funcionalidades MCP completas
-- **Semana 8-10**: Herramientas avanzadas
-- **Semana 11**: Documentación y release
+### Documentación
+- Guías específicas por transporte
+- Ejemplos de migración stdio → TCP
+- Mejores prácticas y patrones
 
-Total: ~3 meses desde la resolución de bugs del SDK
+## Cronograma Actualizado
+
+- **Semana 1**: Implementación TCP (en curso)
+- **Semana 2-4**: Funcionalidades MCP completas
+- **Semana 5-7**: Herramientas avanzadas
+- **Semana 8-9**: Mejoras arquitectónicas
+- **Semana 10**: Documentación y release
+
+Total estimado: ~2.5 meses para release completo
+
+## Integración con otros proyectos ultraPRO
+
+### uRAG Integration
+- Exponer búsqueda vectorial como herramienta MCP
+- Permitir indexación de documentos vía MCP
+
+### mcp-bridge Integration
+- Usar uMCP como backend para bridges
+- Soporte nativo para múltiples clientes
+
+## Notas
+
+- La implementación TCP es la prioridad inmediata
+- Los fixes del SDK permiten desarrollo sin bloqueos
+- Mantener flexibilidad para futuros transportes (WebSocket, HTTP/2)
