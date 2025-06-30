@@ -1,0 +1,19 @@
+{
+  "name": "umcp-test-client",
+  "version": "1.0.0",
+  "description": "Test client for uMCP server",
+  "type": "module",
+  "scripts": {
+    "test": "node test-mcp-client.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.13.2"
+  },
+  "main": "test-mcp-client.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

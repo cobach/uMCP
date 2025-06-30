@@ -107,8 +107,17 @@ public class ToolContainer{
 
         log.info("Tool schema: {}", schema);
 
+        // Convert schema to JSON string
+        String schemaJson;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            schemaJson = mapper.writeValueAsString(schema);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize schema", e);
+        }
+        
         McpServerFeatures.AsyncToolSpecification asyncToolSpecification = new McpServerFeatures.AsyncToolSpecification(
-                new McpSchema.Tool(getToolName(), getToolDescription(), schema),
+                new McpSchema.Tool(getToolName(), getToolDescription(), schemaJson),
                 (exchange, arguments) -> {
                     log.info("Tool {} called with arguments: {}", getToolName(), arguments);
 

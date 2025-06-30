@@ -82,8 +82,17 @@ public class Tools {
 
         log.info("Tool schema: {}", schema);
 
+        // Convert schema to JSON string
+        String schemaJson;
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            schemaJson = mapper.writeValueAsString(schema);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize schema", e);
+        }
+
         McpServerFeatures.AsyncToolSpecification asyncToolSpecification = new McpServerFeatures.AsyncToolSpecification(
-                new McpSchema.Tool("userWorkstationInfo", "User workstation information", schema),
+                new McpSchema.Tool("userWorkstationInfo", "User workstation information", schemaJson),
                 (exchange, arguments) -> {
 
                     // Send a log message to clients
