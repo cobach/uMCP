@@ -17,7 +17,7 @@ public class SseIntegrationApp {
      * Static initializer block that sets up logging to a file.
      */
     static{
-        MiscTools.initializeLogInFile("/var/logs/upro/umcp-sse.log");
+        MiscTools.initializeLogInFile("logs/umcp-sse.log");
     }
 
     /**

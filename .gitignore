@@ -46,3 +46,8 @@ install/
 
 ### Mac OS ###
 .DS_Store
+
+### Node.js ###
+node_modules/
+package-lock*.json
+test-mcp-client.js
