@@ -5,7 +5,7 @@ Añadir soporte de transporte TCP a uMCP manteniendo la arquitectura actual y pe
 
 ## Estado Actual
 - ✅ uMCP funciona correctamente con transporte stdio
-- ✅ SDK MCP 0.11.0-SNAPSHOT con fixes de timeout y deserialización
+- ✅ SDK MCP 0.10.1-SNAPSHOT con fixes de timeout y deserialización
 - ✅ Arquitectura modular con abstracciones de capacidades (SyncCapability/AsyncCapability)
 - ✅ SSE transport ya implementado como referencia
 
