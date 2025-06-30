@@ -10,14 +10,14 @@ uMCP is a lightweight framework for building MCP (Model Context Protocol) server
 
 - **Build the project**: `./gradlew build`
 - **Run the application**: `./gradlew run`
-- **Run tests**: `./gradlew test`
+- **Run unit tests**: `./gradlew test`
 - **Clean build**: `./gradlew clean build`
 - **Publish to local Maven**: `./gradlew publishLocal`
 
 ## Project Structure
 
 ```
-src/main/java/org/gegolabs/mcp1/
+src/main/java/org/gegolabs/mcp/    # Note: Changed from mcp1 to mcp
 ├── StdioIntegrationApp.java   # Main entry point for stdio transport
 ├── SseIntegrationApp.java     # SSE transport example
 ├── MCPServer.java             # Core server builder and configuration
@@ -44,7 +44,7 @@ src/main/java/org/gegolabs/mcp1/
 
 ## Key Dependencies
 
-- MCP Java SDK: `io.modelcontextprotocol.sdk:mcp:0.10.0`
+- MCP Java SDK: `io.modelcontextprotocol.sdk:mcp:0.10.1-SNAPSHOT` (local build with bug fixes)
 - Lombok: For reducing boilerplate code
 - Gson: JSON serialization
 - Logback: Logging framework
@@ -57,7 +57,7 @@ src/main/java/org/gegolabs/mcp1/
 1. **Timeout Issue (PR #350)**: The SDK has a bug where responses timeout due to incorrect operator ordering in reactive streams
 2. **CallToolRequest Deserialization (PR #355)**: The SDK fails to deserialize tool call parameters correctly
 
-**Status**: Both bugs have been reported and PRs submitted to the official repository. Until merged, the framework works correctly with stdio transport for basic operations.
+**Status**: Both bugs have been reported and PRs submitted to the official repository. We're using a local build (0.10.1-SNAPSHOT) with these fixes applied until they're merged upstream.
 
 ## Next Steps
 
@@ -70,9 +70,54 @@ Once the SDK bugs are fixed:
 
 ## Testing
 
+### Unit Tests
+
 The project includes unit tests for tool implementations. Run with:
 ```bash
 ./gradlew test
+```
+
+### Integration Testing with Node.js SDK
+
+For comprehensive integration testing, use the Node.js MCP SDK test client:
+
+1. **Navigate to test client directory**:
+   ```bash
+   cd test-clients/node-sdk
+   ```
+
+2. **Run the test client**:
+   ```bash
+   node test-umcp-with-sdk.js
+   ```
+
+This test client:
+- Connects to the uMCP server via stdio
+- Lists available tools
+- Calls each tool and verifies responses
+- Validates that SDK bug fixes are working (no timeouts, proper deserialization)
+
+**Important**: Always use this Node.js SDK test client for integration testing instead of manually sending JSON messages. The SDK client properly handles the MCP protocol, connection lifecycle, and response parsing.
+
+### Test Output Example
+
+```
+Testing uMCP server with Node.js SDK...
+
+1. Connecting to uMCP server...
+✓ Connected successfully
+
+2. Listing available tools...
+✓ Tools received: 2
+  - domain-availability
+  - SystemInformation
+
+3. Testing SystemInformation tool...
+✓ SystemInformation result: [system info output]
+
+✅ All tests completed successfully!
+✅ No timeout errors (PR #350 fix verified)
+✅ Tool calls work correctly (PR #355 fix verified)
 ```
 
 ## Integration with Claude

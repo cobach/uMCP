@@ -9,7 +9,7 @@ group = 'org.gegolabs'
 version = '1.0.2'
 
 application {
-    mainClass = 'org.gegolabs.mcp1.StdioIntegrationApp'
+    mainClass = 'org.gegolabs.mcp.StdioIntegrationApp'
     applicationDefaultJvmArgs = [
         '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
         '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED',
