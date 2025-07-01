@@ -13,37 +13,45 @@ A lightweight framework for building MCP (Model Context Protocol) servers in Jav
 - **Minimal Dependencies**: Lightweight framework built on top of the official SDK
 - **Claude Desktop Ready**: Works seamlessly with Claude Desktop using the bridge connector
 
-## Quick Start
+## Installation
 
 ### Prerequisites
 
 - Java 17 or higher
-- Gradle 8.5+ (optional, wrapper included)
+- Gradle 8.5+ (for building from source)
 
-### Building
+### Using as a Dependency
+
+Add uMCP to your project:
+
+#### Maven
+```xml
+<dependency>
+    <groupId>org.gegolabs</groupId>
+    <artifactId>uMCP</artifactId>
+    <version>1.1.0</version>
+</dependency>
+```
+
+#### Gradle
+```groovy
+implementation 'org.gegolabs:uMCP:1.1.0'
+```
+
+**Note**: Currently available in Maven Local. Run `./gradlew publishToMavenLocal` after cloning.
+
+### Building from Source
 
 ```bash
-# Build the project
-./gradlew build
+# Clone the repository
+git clone https://github.com/cobach/uMCP.git
+cd uMCP
+
+# Build and install to local Maven repository
+./gradlew publishToMavenLocal
 
 # Run tests
 ./gradlew test
-
-# Create executable JAR
-./gradlew jar
-```
-
-### Running
-
-```bash
-# Run with default port (3000)
-./gradlew run
-
-# Run with custom port
-./gradlew run --args="8080"
-
-# Or run the JAR directly
-java -jar build/libs/uMCP-1.1.0.jar [port]
 ```
 
 ## Creating Tools
@@ -110,34 +118,39 @@ server.start();
 
 To connect your uMCP server with Claude Desktop, you have several options:
 
-### Option 1: Using the Included Connector Script (Simplest)
+### Option 1: Direct JAR Configuration
 
-After building uMCP, a connector script is created in `install/bin/`:
+When you build a server using uMCP, configure Claude Desktop to use the bridge JAR:
 
 1. Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
-    "my-umcp-server": {
-      "command": "/path/to/uMCP/install/bin/uMCP-connector",
-      "args": ["localhost", "3000"]
+    "my-server": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "/path/to/mcp-java-bridge-1.0.0.jar",
+        "--connector",
+        "localhost",
+        "3000"
+      ]
     }
   }
 }
 ```
 
-2. Start your uMCP server on the configured port
+2. Start your MCP server (built with uMCP) on port 3000
 3. Restart Claude Desktop
 
 ### Option 2: Interactive Installation (Recommended)
 
-uMCP includes the mcp-java-bridge JAR which provides an interactive installer:
+Use the mcp-java-bridge JAR installer:
 
 ```bash
-# After building uMCP, the bridge JAR is in install/lib/
-cd /path/to/uMCP
-java -jar install/lib/mcp-java-bridge-1.0.0.jar
+# Download mcp-java-bridge from https://github.com/cobach/mcp-java-bridge
+java -jar mcp-java-bridge-1.0.0.jar
 ```
 
 This will:
@@ -153,35 +166,36 @@ This will:
 For automated setups, use specific parameters:
 
 ```bash
-java -jar install/lib/mcp-java-bridge-1.0.0.jar install \
-  -n "my-umcp-server" \
-  -c /path/to/uMCP/install/bin/uMCP-connector \
+java -jar mcp-java-bridge-1.0.0.jar install \
+  -n "my-server" \
+  -c /path/to/mcp-java-bridge-1.0.0.jar \
   -h localhost \
   -p 3000
 ```
 
 **Arguments:**
 - `-n` - Server name in Claude Desktop (required)
-- `-c` - Path to the connector script
+- `-c` - Path to the mcp-java-bridge JAR
 - `-h` - Server host (default: localhost)
 - `-p` - Server port (default: 3000)
 
-### Option 4: Direct JAR Usage
+### Option 4: Script Wrapper
 
-You can also use the bridge JAR directly as the connector:
+Create a simple script to wrap the connector command:
+
+```bash
+#!/bin/bash
+# save as: my-server-connector.sh
+java -jar /path/to/mcp-java-bridge-1.0.0.jar --connector localhost 3000
+```
+
+Then configure Claude Desktop:
 
 ```json
 {
   "mcpServers": {
-    "my-umcp-server": {
-      "command": "java",
-      "args": [
-        "-jar",
-        "/path/to/uMCP/install/lib/mcp-java-bridge-1.0.0.jar",
-        "--connector",
-        "localhost",
-        "3000"
-      ]
+    "my-server": {
+      "command": "/path/to/my-server-connector.sh"
     }
   }
 }
@@ -195,66 +209,93 @@ You can also use the bridge JAR directly as the connector:
    - On macOS: `~/Library/Logs/Claude/`
    - Look for connection errors or server startup issues
 
-## MCP Bridge JAR Commands
+## MCP Bridge JAR Usage
 
-The included mcp-java-bridge JAR is a multi-purpose tool with three modes:
+The mcp-java-bridge JAR (available at https://github.com/cobach/mcp-java-bridge) is a multi-purpose tool:
 
 ### 1. Interactive Installer (Default)
 
-Running without arguments starts an interactive installer:
-
 ```bash
-java -jar install/lib/mcp-java-bridge-1.0.0.jar
+java -jar mcp-java-bridge-1.0.0.jar
 ```
 
 ### 2. Connector Mode
 
-Used by Claude Desktop to bridge stdio↔TCP communication:
+Used by Claude Desktop to bridge stdio↔TCP:
 
 ```bash
-# With default settings (localhost:3000)
-java -jar install/lib/mcp-java-bridge-1.0.0.jar --connector
+# Default settings (localhost:3000)
+java -jar mcp-java-bridge-1.0.0.jar --connector
 
-# With custom host/port
-java -jar install/lib/mcp-java-bridge-1.0.0.jar --connector 192.168.1.100 8080
+# Custom host/port
+java -jar mcp-java-bridge-1.0.0.jar --connector 192.168.1.100 8080
 ```
-
-**Note**: This mode is typically not run manually - it's executed by Claude Desktop.
 
 ### 3. Install Command
 
-For non-interactive installation:
-
 ```bash
-java -jar install/lib/mcp-java-bridge-1.0.0.jar install -n <server-name> -c <jar-path> [-h <host>] [-p <port>]
+java -jar mcp-java-bridge-1.0.0.jar install -n <server-name> -c <jar-path> [-h <host>] [-p <port>]
 ```
 
-### Help Command
-
-Display usage information:
+### 4. Help
 
 ```bash
-java -jar install/lib/mcp-java-bridge-1.0.0.jar --help
+java -jar mcp-java-bridge-1.0.0.jar --help
 ```
 
-## Example Application
+## Creating Your MCP Server
+
+### Step 1: Create a New Project
+
+Create a new Gradle project with the following `build.gradle`:
+
+```gradle
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.gegolabs:uMCP:1.1.0'
+}
+
+application {
+    mainClass = 'com.example.MyMCPServer'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
+```
+
+### Step 2: Create Your Server Application
 
 ```java
+package com.example;
+
 import org.gegolabs.mcp.MCPServer;
 import org.gegolabs.mcp.impl.DomainAvailability;
 import org.gegolabs.mcp.impl.SystemInformation;
 
-public class MyApp {
+public class MyMCPServer {
     public static void main(String[] args) throws Exception {
+        int port = args.length > 0 ? Integer.parseInt(args[0]) : 3000;
+        
         MCPServer server = MCPServer.builder()
             .name("MyMCPServer")
             .version("1.0.0")
-            .port(3000)
+            .port(port)
             .tool(new DomainAvailability())
             .tool(new SystemInformation())
             .build();
             
         server.start();
+        System.out.println("MCP Server running on port " + port);
         
         // Keep running until interrupted
         Thread.currentThread().join();
@@ -262,24 +303,37 @@ public class MyApp {
 }
 ```
 
-## Project Structure
+### Step 3: Run Your Server
+
+```bash
+# Run with Gradle
+./gradlew run
+
+# Or build and run the JAR
+./gradlew build
+java -jar build/libs/your-project.jar 3000
+```
+
+## uMCP Library Structure
 
 ```
 uMCP/
 ├── src/
 │   ├── main/java/org/gegolabs/mcp/
-│   │   ├── protocol/          # Core abstractions
-│   │   ├── impl/              # Tool implementations
-│   │   └── MCPServer.java     # Main server class
+│   │   ├── protocol/          # Core interfaces (SyncCapability, AsyncCapability)
+│   │   ├── impl/              # Example tool implementations
+│   │   ├── bridge/            # Bridge integration (from mcp-java-bridge)
+│   │   └── MCPServer.java     # Main server builder class
 │   └── test/                  # Unit tests
 ├── docs/                      # Additional documentation
-├── install/                   # Installation directory (after build)
-│   ├── bin/
-│   │   ├── uMCP              # Server launcher
-│   │   └── uMCP-connector    # Bridge connector wrapper
-│   └── lib/                   # All JARs including mcp-java-bridge.jar
 └── build.gradle               # Build configuration
 ```
+
+When you use uMCP in your project, it provides:
+- **Core abstractions** for creating MCP tools
+- **MCPServer builder** for easy server setup
+- **Built-in TCP transport** via mcp-java-bridge
+- **Example implementations** to reference
 
 ## Dependencies
 
@@ -297,21 +351,18 @@ While MCP Inspector expects stdio transport, you can test your uMCP server using
 2. Use the mcp-java-bridge connector as an intermediary
 3. Point MCP Inspector to the connector
 
-## Publishing
+## Local Development
 
-To publish to local Maven repository:
+When developing with uMCP locally:
 
 ```bash
-./gradlew publishLocal
+# Clone and install uMCP to local Maven repository
+git clone https://github.com/cobach/uMCP.git
+cd uMCP
+./gradlew publishToMavenLocal
 ```
 
-Then use in other projects:
-
-```gradle
-dependencies {
-    implementation 'org.gegolabs:uMCP:1.1.0'
-}
-```
+This installs uMCP to your local Maven repository (~/.m2/repository), making it available for your projects to use as a dependency.
 
 ## Migration from v1.0.x
 
