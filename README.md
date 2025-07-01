@@ -1,14 +1,17 @@
 # uMCP (ultraMCP)
 
-A lightweight framework for building MCP (Model Context Protocol) servers in Java. uMCP provides a simple abstraction layer over the official MCP Java SDK, making it easy to create and deploy MCP servers with minimal boilerplate.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A lightweight framework for building MCP (Model Context Protocol) servers in Java. uMCP provides a simple abstraction layer over the official MCP Java SDK, making it easy to create and deploy MCP servers with TCP transport.
 
 ## Features
 
 - **Simple Abstractions**: Clean interfaces (`SyncCapability`, `AsyncCapability`) for implementing MCP tools
-- **Multiple Transports**: Built-in support for stdio and SSE transports
+- **TCP Transport by Default**: Always uses TCP transport via [mcp-java-bridge](https://github.com/cobach/mcp-java-bridge)
 - **Type Safety**: Automatic type handling and JSON schema generation
 - **Builder Pattern**: Fluent API for server configuration
 - **Minimal Dependencies**: Lightweight framework built on top of the official SDK
+- **Claude Desktop Ready**: Works seamlessly with Claude Desktop using the bridge connector
 
 ## Quick Start
 
@@ -33,21 +36,14 @@ A lightweight framework for building MCP (Model Context Protocol) servers in Jav
 ### Running
 
 ```bash
-# Run with Gradle
+# Run with default port (3000)
 ./gradlew run
+
+# Run with custom port
+./gradlew run --args="8080"
 
 # Or run the JAR directly
-java -jar build/libs/uMCP-1.0.2.jar
-```
-
-### Testing with MCP Inspector
-
-```bash
-# Run the server
-./gradlew run
-
-# In another terminal, start the MCP Inspector
-npx @modelcontextprotocol/inspector java -jar build/libs/uMCP-1.0.2.jar
+java -jar build/libs/uMCP-1.1.0.jar [port]
 ```
 
 ## Creating Tools
@@ -64,37 +60,149 @@ public class MyTool extends ToolContainer implements SyncCapability<MyInput, MyO
 }
 ```
 
+## Server Configuration
+
+uMCP servers always use TCP transport. You can configure the host and port:
+
+```java
+// Default: localhost:3000
+MCPServer server = MCPServer.builder()
+    .name("MyServer")
+    .version("1.0.0")
+    .tool(new MyTool())
+    .build();
+
+// Custom port
+MCPServer server = MCPServer.builder()
+    .name("MyServer")
+    .version("1.0.0")
+    .port(8080)
+    .tool(new MyTool())
+    .build();
+
+// Custom host and port
+MCPServer server = MCPServer.builder()
+    .name("MyServer")
+    .version("1.0.0")
+    .host("0.0.0.0")
+    .port(8080)
+    .tool(new MyTool())
+    .tool(new AnotherTool())
+    .build();
+
+// Start the server
+server.start();
+```
+
+## Claude Desktop Configuration
+
+To connect your uMCP server with Claude Desktop:
+
+### Option 1: Using the Convenience Script (Recommended)
+
+The easiest way is to use the included `uMCP-connector` script:
+
+1. Edit `~/Library/Application Support/Claude/claude_desktop_config.json` and add:
+
+```json
+{
+  "mcpServers": {
+    "my-umcp-server": {
+      "command": "/path/to/uMCP-1.1.0/install/bin/uMCP-connector",
+      "args": ["localhost", "3000"]
+    }
+  }
+}
+```
+
+The script automatically handles the bridge connector setup.
+
+### Option 2: Automatic Installation
+
+uMCP includes the mcp-java-bridge JAR which can automatically configure Claude Desktop:
+
+```bash
+# Interactive installation
+cd /path/to/uMCP-1.1.0
+java -jar install/lib/mcp-java-bridge-1.0.0.jar
+
+# Non-interactive installation with specific parameters
+java -jar install/lib/mcp-java-bridge-1.0.0.jar install \
+  -n "my-umcp-server" \
+  -c install/bin/uMCP-connector \
+  -h localhost \
+  -p 3000
+```
+
+The installer will:
+- Auto-detect configuration if run interactively
+- Create backup of existing Claude Desktop config
+- Add your server configuration automatically
+
+### Final Steps
+
+1. **Start your uMCP server** on the configured port
+2. **Restart Claude Desktop** to connect
+
+## Example Application
+
+```java
+import org.gegolabs.mcp.MCPServer;
+import org.gegolabs.mcp.impl.DomainAvailability;
+import org.gegolabs.mcp.impl.SystemInformation;
+
+public class MyApp {
+    public static void main(String[] args) throws Exception {
+        MCPServer server = MCPServer.builder()
+            .name("MyMCPServer")
+            .version("1.0.0")
+            .port(3000)
+            .tool(new DomainAvailability())
+            .tool(new SystemInformation())
+            .build();
+            
+        server.start();
+        
+        // Keep running until interrupted
+        Thread.currentThread().join();
+    }
+}
+```
+
 ## Project Structure
 
 ```
 uMCP/
 ├── src/
-│   ├── main/java/org/gegolabs/mcp1/
+│   ├── main/java/org/gegolabs/mcp/
 │   │   ├── protocol/          # Core abstractions
 │   │   ├── impl/              # Tool implementations
-│   │   └── transport/         # Transport providers
+│   │   └── MCPServer.java     # Main server class
 │   └── test/                  # Unit tests
-├── test-clients/              # Test clients for validation
-│   └── node-sdk/              # Node.js SDK test client
 ├── docs/                      # Additional documentation
+├── install/                   # Installation directory (after build)
+│   ├── bin/
+│   │   ├── uMCP              # Server launcher
+│   │   └── uMCP-connector    # Bridge connector wrapper
+│   └── lib/                   # All JARs including mcp-java-bridge.jar
 └── build.gradle               # Build configuration
 ```
 
-## Documentation
+## Dependencies
 
-- [CLAUDE.md](docs/CLAUDE.md) - Development guidelines for Claude Code
-- [TCP Transport Plan](docs/TCP_TRANSPORT_IMPLEMENTATION_PLAN.md) - Upcoming TCP transport implementation
-- [Next Steps](docs/NEXT_STEPS.md) - Project roadmap
+- MCP Java SDK 0.10.0
+- mcp-java-bridge 1.0.0
+- Project Reactor (via SDK)
+- SLF4J + Logback for logging
+- Lombok for reducing boilerplate
 
-## Testing
+## Testing with MCP Inspector
 
-The project includes test clients to validate MCP server functionality:
+While MCP Inspector expects stdio transport, you can test your uMCP server using the bridge:
 
-```bash
-cd test-clients/node-sdk
-npm install
-npm test
-```
+1. Start your uMCP server
+2. Use the mcp-java-bridge connector as an intermediary
+3. Point MCP Inspector to the connector
 
 ## Publishing
 
@@ -104,9 +212,25 @@ To publish to local Maven repository:
 ./gradlew publishLocal
 ```
 
+Then use in other projects:
+
+```gradle
+dependencies {
+    implementation 'org.gegolabs:uMCP:1.1.0'
+}
+```
+
+## Migration from v1.0.x
+
+If you're upgrading from uMCP 1.0.x:
+
+1. **Transport changes**: Remove any `.transport_Stdio()` or `.transport_Sse()` calls - TCP is now default
+2. **Port configuration**: Use `.port(3000)` instead of transport methods
+3. **Bridge dependency**: Ensure mcp-java-bridge connector is installed for Claude Desktop
+
 ## License
 
-[License information to be added]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
