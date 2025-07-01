@@ -108,53 +108,134 @@ server.start();
 
 ## Claude Desktop Configuration
 
-To connect your uMCP server with Claude Desktop:
+To connect your uMCP server with Claude Desktop, you have several options:
 
-### Option 1: Using the Convenience Script (Recommended)
+### Option 1: Using the Included Connector Script (Simplest)
 
-The easiest way is to use the included `uMCP-connector` script:
+After building uMCP, a connector script is created in `install/bin/`:
 
-1. Edit `~/Library/Application Support/Claude/claude_desktop_config.json` and add:
+1. Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "my-umcp-server": {
-      "command": "/path/to/uMCP-1.1.0/install/bin/uMCP-connector",
+      "command": "/path/to/uMCP/install/bin/uMCP-connector",
       "args": ["localhost", "3000"]
     }
   }
 }
 ```
 
-The script automatically handles the bridge connector setup.
+2. Start your uMCP server on the configured port
+3. Restart Claude Desktop
 
-### Option 2: Automatic Installation
+### Option 2: Interactive Installation (Recommended)
 
-uMCP includes the mcp-java-bridge JAR which can automatically configure Claude Desktop:
+uMCP includes the mcp-java-bridge JAR which provides an interactive installer:
 
 ```bash
-# Interactive installation
-cd /path/to/uMCP-1.1.0
+# After building uMCP, the bridge JAR is in install/lib/
+cd /path/to/uMCP
 java -jar install/lib/mcp-java-bridge-1.0.0.jar
+```
 
-# Non-interactive installation with specific parameters
+This will:
+- Auto-detect the JAR location
+- Prompt for server name (e.g., "my-umcp-server")
+- Prompt for host (default: localhost)
+- Prompt for port (default: 3000)
+- Automatically configure Claude Desktop
+- Create a backup of existing configuration
+
+### Option 3: Non-Interactive Installation
+
+For automated setups, use specific parameters:
+
+```bash
 java -jar install/lib/mcp-java-bridge-1.0.0.jar install \
   -n "my-umcp-server" \
-  -c install/bin/uMCP-connector \
+  -c /path/to/uMCP/install/bin/uMCP-connector \
   -h localhost \
   -p 3000
 ```
 
-The installer will:
-- Auto-detect configuration if run interactively
-- Create backup of existing Claude Desktop config
-- Add your server configuration automatically
+**Arguments:**
+- `-n` - Server name in Claude Desktop (required)
+- `-c` - Path to the connector script
+- `-h` - Server host (default: localhost)
+- `-p` - Server port (default: 3000)
 
-### Final Steps
+### Option 4: Direct JAR Usage
+
+You can also use the bridge JAR directly as the connector:
+
+```json
+{
+  "mcpServers": {
+    "my-umcp-server": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "/path/to/uMCP/install/lib/mcp-java-bridge-1.0.0.jar",
+        "--connector",
+        "localhost",
+        "3000"
+      ]
+    }
+  }
+}
+```
+
+### Verifying the Connection
 
 1. **Start your uMCP server** on the configured port
-2. **Restart Claude Desktop** to connect
+2. **Restart Claude Desktop** to load the new configuration
+3. **Check Claude Desktop logs** if the connection doesn't work:
+   - On macOS: `~/Library/Logs/Claude/`
+   - Look for connection errors or server startup issues
+
+## MCP Bridge JAR Commands
+
+The included mcp-java-bridge JAR is a multi-purpose tool with three modes:
+
+### 1. Interactive Installer (Default)
+
+Running without arguments starts an interactive installer:
+
+```bash
+java -jar install/lib/mcp-java-bridge-1.0.0.jar
+```
+
+### 2. Connector Mode
+
+Used by Claude Desktop to bridge stdio↔TCP communication:
+
+```bash
+# With default settings (localhost:3000)
+java -jar install/lib/mcp-java-bridge-1.0.0.jar --connector
+
+# With custom host/port
+java -jar install/lib/mcp-java-bridge-1.0.0.jar --connector 192.168.1.100 8080
+```
+
+**Note**: This mode is typically not run manually - it's executed by Claude Desktop.
+
+### 3. Install Command
+
+For non-interactive installation:
+
+```bash
+java -jar install/lib/mcp-java-bridge-1.0.0.jar install -n <server-name> -c <jar-path> [-h <host>] [-p <port>]
+```
+
+### Help Command
+
+Display usage information:
+
+```bash
+java -jar install/lib/mcp-java-bridge-1.0.0.jar --help
+```
 
 ## Example Application
 
