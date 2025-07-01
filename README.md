@@ -51,9 +51,21 @@ java -jar build/libs/uMCP-1.1.0.jar [port]
 Tools in uMCP implement the `SyncCapability` or `AsyncCapability` interface:
 
 ```java
-public class MyTool extends ToolContainer implements SyncCapability<MyInput, MyOutput> {
+@Name("my-tool")
+@Description("Description of what my tool does")
+public class MyTool implements SyncCapability<MyInput, MyOutput> {
     @Override
-    public MyOutput execute(MyInput input) {
+    public void initialize() throws CapabilityException {
+        // Initialize resources if needed
+    }
+    
+    @Override
+    public void shutdown() throws CapabilityException {
+        // Clean up resources if needed
+    }
+    
+    @Override
+    public MyOutput execute(MyInput input) throws CapabilityException {
         // Tool implementation
         return new MyOutput(result);
     }
