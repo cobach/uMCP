@@ -29,13 +29,13 @@ Add uMCP to your project:
 <dependency>
     <groupId>org.gegolabs</groupId>
     <artifactId>uMCP</artifactId>
-    <version>1.1.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
 #### Gradle
 ```groovy
-implementation 'org.gegolabs:uMCP:1.1.0'
+implementation 'org.gegolabs:uMCP:1.0.0'
 ```
 
 **Note**: Currently available in Maven Local. Run `./gradlew publishToMavenLocal` after cloning.
@@ -261,7 +261,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.gegolabs:uMCP:1.1.0'
+    implementation 'org.gegolabs:uMCP:1.0.0'
 }
 
 application {
