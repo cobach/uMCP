@@ -174,16 +174,33 @@ java -jar ~/.m2/repository/org/gegolabs/mcp/mcp-java-bridge/1.0.0/mcp-java-bridg
   -p 3000
 ```
 
-### Option 4: Copy JAR for Easier Access
+### Option 4: Gradle Task for Easy Access
 
-If you prefer, copy the JAR to a more convenient location:
+Add this task to your project's `build.gradle` to copy the bridge JAR:
+
+```gradle
+task installBridge(type: Copy) {
+    from configurations.runtimeClasspath.filter { it.name.contains('mcp-java-bridge') }
+    into 'install'
+    rename { 'mcp-bridge.jar' }
+    doLast {
+        println "Bridge JAR copied to: install/mcp-bridge.jar"
+        println "Run installer: java -jar install/mcp-bridge.jar"
+    }
+}
+
+// Run after build
+build.finalizedBy installBridge
+```
+
+Then:
 
 ```bash
-# Copy from Maven repository to your project
-cp ~/.m2/repository/org/gegolabs/mcp/mcp-java-bridge/1.0.0/mcp-java-bridge-1.0.0.jar ./
+# Build your project and copy the bridge JAR
+./gradlew build
 
-# Then use the local copy for configuration
-java -jar mcp-java-bridge-1.0.0.jar
+# Run the installer from the convenient location
+java -jar install/mcp-bridge.jar
 ```
 
 ### Verifying the Connection
@@ -256,6 +273,20 @@ application {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
 }
+
+// Task to copy mcp-java-bridge JAR for easy Claude Desktop installation
+task installBridge(type: Copy) {
+    from configurations.runtimeClasspath.filter { it.name.contains('mcp-java-bridge') }
+    into 'install'
+    rename { 'mcp-bridge.jar' }
+    doLast {
+        println "Bridge JAR copied to: install/mcp-bridge.jar"
+        println "Run installer: java -jar install/mcp-bridge.jar"
+    }
+}
+
+// Run installBridge after build
+build.finalizedBy installBridge
 ```
 
 ### Step 2: Create Your Server Application
@@ -288,14 +319,19 @@ public class MyMCPServer {
 }
 ```
 
-### Step 3: Run Your Server
+### Step 3: Build and Configure
 
 ```bash
-# Run with Gradle
+# Build your project (this also copies the bridge JAR)
+./gradlew build
+
+# Configure Claude Desktop using the bridge installer
+java -jar install/mcp-bridge.jar
+
+# Run your server
 ./gradlew run
 
-# Or build and run the JAR
-./gradlew build
+# Or run the JAR directly
 java -jar build/libs/your-project.jar 3000
 ```
 
