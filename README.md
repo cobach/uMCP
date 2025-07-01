@@ -385,14 +385,6 @@ cd uMCP
 
 This installs uMCP to your local Maven repository (~/.m2/repository), making it available for your projects to use as a dependency.
 
-## Migration from v1.0.x
-
-If you're upgrading from uMCP 1.0.x:
-
-1. **Transport changes**: Remove any `.transport_Stdio()` or `.transport_Sse()` calls - TCP is now default
-2. **Port configuration**: Use `.port(3000)` instead of transport methods
-3. **Bridge dependency**: Ensure mcp-java-bridge connector is installed for Claude Desktop
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
