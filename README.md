@@ -118,20 +118,16 @@ server.start();
 
 After building your MCP server, you need to configure Claude Desktop to connect to it. The mcp-java-bridge JAR includes a CLI installer for this purpose.
 
-### Accessing the Bridge JAR
+### Step 1: Access the Bridge JAR
 
-When using uMCP, the bridge JAR is automatically included as a dependency. You can access it in several ways:
+When using uMCP, the bridge JAR is automatically included as a dependency. You can access it in two ways:
 
-#### Option 1: From Local Maven Repository
-
+**From Maven Repository:**
 ```bash
 java -jar ~/.m2/repository/org/gegolabs/mcp/mcp-java-bridge/1.0.0/mcp-java-bridge-1.0.0.jar
 ```
 
-#### Option 2: Copy JAR Using Gradle Task
-
-Add this task to your build.gradle:
-
+**Or copy it using a Gradle task:**
 ```gradle
 task copyBridgeJar(type: Copy) {
     from configurations.runtimeClasspath.filter { it.name.contains('mcp-java-bridge') }
@@ -140,29 +136,21 @@ task copyBridgeJar(type: Copy) {
 }
 ```
 
-Then run:
+Then: `./gradlew copyBridgeJar`
+
+### Step 2: Configure Claude Desktop
+
+Choose one of these three options:
+
+#### Option A: Interactive Installation (Recommended)
+
+Run the installer without arguments for a guided setup:
+
 ```bash
-./gradlew copyBridgeJar
-java -jar install/mcp-bridge.jar
-```
-
-### Running the Installer
-
-Once you have access to the JAR, run the interactive installer:
-
-```bash
-# Interactive mode (recommended)
 java -jar mcp-java-bridge-1.0.0.jar
-
-# Or with specific parameters
-java -jar mcp-java-bridge-1.0.0.jar install \
-  -n "my-server" \
-  -c mcp-java-bridge-1.0.0.jar \
-  -h localhost \
-  -p 3000
 ```
 
-The interactive installer will:
+This will:
 - Auto-detect the JAR location
 - Prompt for server name (e.g., "my-server")
 - Prompt for host (default: localhost)
@@ -170,7 +158,25 @@ The interactive installer will:
 - Automatically configure Claude Desktop
 - Create a backup of existing configuration
 
-### Manual Configuration
+#### Option B: Command Line Installation
+
+For automated setups, use specific parameters:
+
+```bash
+java -jar mcp-java-bridge-1.0.0.jar install \
+  -n "my-server" \
+  -c mcp-java-bridge-1.0.0.jar \
+  -h localhost \
+  -p 3000
+```
+
+**Parameters:**
+- `-n` - Server name in Claude Desktop (required)
+- `-c` - Path to the JAR that will act as connector
+- `-h` - Server host (default: localhost)
+- `-p` - Server port (default: 3000)
+
+#### Option C: Manual Configuration
 
 If you prefer to configure manually, edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -191,7 +197,7 @@ If you prefer to configure manually, edit `~/Library/Application Support/Claude/
 }
 ```
 
-### Starting Your Server
+### Step 3: Start Your Server
 
 1. Start your MCP server (make sure it's running on the configured port)
 2. Restart Claude Desktop to load the new configuration
