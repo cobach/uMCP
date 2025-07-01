@@ -116,11 +116,29 @@ server.start();
 
 ## Claude Desktop Configuration
 
-To connect your uMCP server with Claude Desktop, you have several options:
+When you build a project with uMCP, the mcp-java-bridge JAR is automatically included as a dependency. You can find it in your local Maven repository:
 
-### Option 1: Direct JAR Configuration
+**Location**: `~/.m2/repository/org/gegolabs/mcp/mcp-java-bridge/1.0.0/mcp-java-bridge-1.0.0.jar`
 
-When you build a server using uMCP, configure Claude Desktop to use the bridge JAR:
+### Option 1: Interactive Installation (Recommended)
+
+Use the interactive installer from your Maven repository:
+
+```bash
+java -jar ~/.m2/repository/org/gegolabs/mcp/mcp-java-bridge/1.0.0/mcp-java-bridge-1.0.0.jar
+```
+
+This will:
+- Auto-detect the JAR location
+- Prompt for server name (e.g., "my-server")
+- Prompt for host (default: localhost)
+- Prompt for port (default: 3000)
+- Automatically configure Claude Desktop
+- Create a backup of existing configuration
+
+### Option 2: Direct Configuration
+
+Manually edit Claude Desktop configuration:
 
 1. Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -131,7 +149,7 @@ When you build a server using uMCP, configure Claude Desktop to use the bridge J
       "command": "java",
       "args": [
         "-jar",
-        "/path/to/mcp-java-bridge-1.0.0.jar",
+        "/Users/YOUR_USERNAME/.m2/repository/org/gegolabs/mcp/mcp-java-bridge/1.0.0/mcp-java-bridge-1.0.0.jar",
         "--connector",
         "localhost",
         "3000"
@@ -141,77 +159,44 @@ When you build a server using uMCP, configure Claude Desktop to use the bridge J
 }
 ```
 
-2. Start your MCP server (built with uMCP) on port 3000
-3. Restart Claude Desktop
-
-### Option 2: Interactive Installation (Recommended)
-
-Use the mcp-java-bridge JAR installer:
-
-```bash
-# Download mcp-java-bridge from https://github.com/cobach/mcp-java-bridge
-java -jar mcp-java-bridge-1.0.0.jar
-```
-
-This will:
-- Auto-detect the JAR location
-- Prompt for server name (e.g., "my-umcp-server")
-- Prompt for host (default: localhost)
-- Prompt for port (default: 3000)
-- Automatically configure Claude Desktop
-- Create a backup of existing configuration
+2. Replace `YOUR_USERNAME` with your actual username
+3. Adjust the port if needed
 
 ### Option 3: Non-Interactive Installation
 
-For automated setups, use specific parameters:
+For automated setups:
 
 ```bash
-java -jar mcp-java-bridge-1.0.0.jar install \
+java -jar ~/.m2/repository/org/gegolabs/mcp/mcp-java-bridge/1.0.0/mcp-java-bridge-1.0.0.jar install \
   -n "my-server" \
-  -c /path/to/mcp-java-bridge-1.0.0.jar \
+  -c ~/.m2/repository/org/gegolabs/mcp/mcp-java-bridge/1.0.0/mcp-java-bridge-1.0.0.jar \
   -h localhost \
   -p 3000
 ```
 
-**Arguments:**
-- `-n` - Server name in Claude Desktop (required)
-- `-c` - Path to the mcp-java-bridge JAR
-- `-h` - Server host (default: localhost)
-- `-p` - Server port (default: 3000)
+### Option 4: Copy JAR for Easier Access
 
-### Option 4: Script Wrapper
-
-Create a simple script to wrap the connector command:
+If you prefer, copy the JAR to a more convenient location:
 
 ```bash
-#!/bin/bash
-# save as: my-server-connector.sh
-java -jar /path/to/mcp-java-bridge-1.0.0.jar --connector localhost 3000
-```
+# Copy from Maven repository to your project
+cp ~/.m2/repository/org/gegolabs/mcp/mcp-java-bridge/1.0.0/mcp-java-bridge-1.0.0.jar ./
 
-Then configure Claude Desktop:
-
-```json
-{
-  "mcpServers": {
-    "my-server": {
-      "command": "/path/to/my-server-connector.sh"
-    }
-  }
-}
+# Then use the local copy for configuration
+java -jar mcp-java-bridge-1.0.0.jar
 ```
 
 ### Verifying the Connection
 
-1. **Start your uMCP server** on the configured port
+1. **Start your MCP server** (built with uMCP) on the configured port
 2. **Restart Claude Desktop** to load the new configuration
-3. **Check Claude Desktop logs** if the connection doesn't work:
-   - On macOS: `~/Library/Logs/Claude/`
-   - Look for connection errors or server startup issues
+3. **Check logs** if the connection doesn't work:
+   - Server logs: Check your application's console output
+   - Claude Desktop logs on macOS: `~/Library/Logs/Claude/`
 
-## MCP Bridge JAR Usage
+## MCP Bridge JAR Commands
 
-The mcp-java-bridge JAR (available at https://github.com/cobach/mcp-java-bridge) is a multi-purpose tool:
+The mcp-java-bridge JAR is included when you use uMCP. It's a multi-purpose tool with three modes:
 
 ### 1. Interactive Installer (Default)
 
